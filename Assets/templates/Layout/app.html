@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en" ng-app="WGL">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title></title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cover.css')}}">
+    <base href="/">
+  </head>
+
+  <body>
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+    <header class="masthead mb-auto" ng-controller="header">
+      <div class="inner">
+        <h3 class="masthead-brand">Raspberry WGL</h3>
+        <nav class="nav nav-masthead justify-content-center">
+          <a ng-repeat="i in menu" ng-click="change(i)" ng-class="{active:i==now}" class="nav-link" href="[[ i ]]">[[ i ]]</a>
+        </nav>
+      </div>
+    </header>
+
+  <main role="main" class="inner cover" ng-view>
+    <h1 class="cover-heading">Cover your page.</h1>
+    <p class="lead">Cover is a one-page template for building simple and beautiful home pages. Download, edit the text, and add your own fullscreen background photo to make it your own.</p>
+    <p class="lead">
+      <a href="#" class="btn btn-lg btn-secondary">Learn more</a>
+    </p>
+  </main>
+
+  <footer class="mastfoot mt-auto">
+    <div class="inner">
+      <p>Cover template for <a href="https://getbootstrap.com/">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
+    </div>
+  </footer>
+</div>
+
+    <script src="{{ url_for('static', filename='js/jquery-3.3.1.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/popper.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/angular.min.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/angular-route.min.js')}}"></script>
+
+    <script>
+      var app = angular.module('WGL',['ngRoute'],function($interpolateProvider){
+        $interpolateProvider.startSymbol('[[');
+        $interpolateProvider.endSymbol(']]');
+      });
+      app.config(function($routeProvider,$locationProvider){
+        $locationProvider.hashPrefix('');
+        $locationProvider.html5Mode({
+          enabled:true
+       });
+        $routeProvider
+        .when("/",{
+          templateUrl : "app/home",
+          controller : 'homeCtrl'
+        })
+        .when("/home",{
+          templateUrl : "app/home",
+          controller : 'homeCtrl'
+        })
+        .when("/detected",{
+          templateUrl : "app/detected",
+          controller : 'detectedCtrl'
+        })
+      });
+      app.run(function($rootScope){
+        $rootScope.$on('nav',function(event,data){
+          $rootScope.$broadcast('header',data);
+        });
+      });
+      app.controller('header',function($scope,$timeout){
+        $scope.now = 'home';
+        $scope.change = function(i){
+          $scope.now = i;
+        }
+        $scope.menu = ['home','detected'];
+        $scope.$on('header',function(event,data){
+          $scope.now = data;
+        });
+      });
+      app.controller('homeCtrl',function($scope){
+
+      });
+      app.controller('detectedCtrl',function($scope,$interval,$http){
+        $scope.$emit('nav','detected');
+        $scope.listAP = [];
+        $scope.scan = function(){
+          $http.get('api/ap').then(function(resp){
+            $scope.listAP = resp.data;
+          });
+        }
+        $interval($scope.scan,500);
+      });
+    </script>
+  </body>
+</html>
